@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trivia NOM-241-SSA1-2021</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+        .question-container {
+            display: none;
+        }
+        .btn {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+        }
+        .correct {
+            background-color: green !important;
+            color: white;
+        }
+        .incorrect {
+            background-color: red !important;
+            color: white;
+        }
+        #next-btn {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Trivia NOM-241-SSA1-2021</h1>
+    <input type="text" id="username" placeholder="Ingrese su nombre" />
+    <button onclick="startQuiz()">Iniciar</button>
+    <div id="quiz" class="animate__animated animate__fadeIn">
+        <p id="question"></p>
+        <div id="answers"></div>
+        <button id="next-btn" onclick="nextQuestion()">Siguiente</button>
+    </div>
+    <div id="result" class="animate__animated animate__fadeIn" style="display:none;"></div>
+    <canvas id="scoreChart"></canvas>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const questions = [
+            { question: "¿Cuál es el objetivo de la NOM-241-SSA1-2021?", options: ["Garantizar la seguridad en la fabricación de dispositivos médicos", "Regular la industria alimentaria", "Controlar la venta de medicamentos"], answer: 0 },
+            { question: "¿Qué establece la norma sobre las instalaciones?", options: ["Deben ser adecuadas para evitar contaminación", "Pueden estar en cualquier condición", "No requieren mantenimiento"], answer: 0 },
+            // Agrega 8 preguntas más aquí...
+        ];
+        let currentQuestion = 0;
+        let score = 0;
+        let userResponses = [];
+        
+        function startQuiz() {
+            document.getElementById("username").style.display = "none";
+            document.querySelector("button").style.display = "none";
+            document.getElementById("quiz").style.display = "block";
+            showQuestion();
+        }
+        
+        function showQuestion() {
+            let q = questions[currentQuestion];
+            document.getElementById("question").innerText = q.question;
+            let answersDiv = document.getElementById("answers");
+            answersDiv.innerHTML = "";
+            q.options.forEach((option, index) => {
+                let btn = document.createElement("button");
+                btn.innerText = option;
+                btn.className = "btn";
+                btn.onclick = () => selectAnswer(index, q.answer, btn);
+                answersDiv.appendChild(btn);
+            });
+            document.getElementById("next-btn").style.display = "none";
+        }
+        
+        function selectAnswer(selected, correct, button) {
+            let buttons = document.querySelectorAll(".btn");
+            buttons.forEach(btn => btn.disabled = true);
+            if (selected === correct) {
+                button.classList.add("correct");
+                score++;
+            } else {
+                button.classList.add("incorrect");
+            }
+            document.getElementById("next-btn").style.display = "block";
+            userResponses.push({ question: questions[currentQuestion].question, correct: selected === correct });
+        }
+        
+        function nextQuestion() {
+            currentQuestion++;
+            if (currentQuestion < questions.length) {
+                showQuestion();
+            } else {
+                showResults();
+            }
+        }
+        
+        function showResults() {
+            document.getElementById("quiz").style.display = "none";
+            let resultDiv = document.getElementById("result");
+            resultDiv.style.display = "block";
+            let feedback = score >= 8 ? "¡Felicidades! Aprobaste la trivia." : "Debes intentarlo nuevamente.";
+            resultDiv.innerHTML = `<h2>Puntaje: ${score}/10</h2><p>${feedback}</p>`;
+            generateChart();
+        }
+        
+        function generateChart() {
+            let ctx = document.getElementById("scoreChart").getContext("2d");
+            let correctAnswers = userResponses.filter(r => r.correct).length;
+            let incorrectAnswers = userResponses.length - correctAnswers;
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ["Correctas", "Incorrectas"],
+                    datasets: [{
+                        label: "Resultados",
+                        data: [correctAnswers, incorrectAnswers],
+                        backgroundColor: ["green", "red"]
+                    }]
+                }
+            });
+        }
+    </script>
+</body>
+</html>
